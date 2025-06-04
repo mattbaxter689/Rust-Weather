@@ -46,21 +46,21 @@ services:
       - kafka-net
 
   # Commenting this out to prevent building rust containers when testing locally
-  # rust-producer:
-  #   container_name: rust-producer
-  #   build:
-  #     context: .
-  #   image: rust_kafka:latest
-  #   command: [ "--broker", "kafka:29092", "producer" ]
-  #   networks:
-  #     - kafka-net
+  rust-producer:
+    container_name: rust-producer
+    build:
+      context: .
+    image: rust_kafka:latest
+    command: [ "--broker", "kafka:29092", "producer" ]
+    networks:
+      - kafka-net
 
-  # rust-consumer:
-  #   container_name: rust-consumer
-  #   image: rust_kafka:latest
-  #   command: [ "--broker", "kafka:29092", "consumer" ]
-  #   networks:
-  #     - kafka-net
+  rust-consumer:
+    container_name: rust-consumer
+    image: rust_kafka:latest
+    command: [ "--broker", "kafka:29092", "consumer" ]
+    networks:
+      - kafka-net
 
 networks:
   kafka-net:
