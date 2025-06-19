@@ -6,6 +6,7 @@ use rdkafka::message::Message;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::time::Duration;
 use tokio_stream::StreamExt;
+use tracing::{error, info};
 
 use crate::config::{load_config, AppConfig};
 
@@ -31,7 +32,7 @@ pub async fn run_consumer(broker: &str) {
         .await
         .expect("Failed to establish db connection");
 
-    println!("[Consumer] Listening for messages...");
+    info!(target: "consumer", "[Consumer] Listening for messages...");
 
     let mut message_stream = consumer.stream();
 
@@ -42,14 +43,16 @@ pub async fn run_consumer(broker: &str) {
                     match serde_json::from_str::<Vec<AirQualityHourly>>(payload) {
                         Ok(parsed) => {
                             if let Err(e) = insert_air_qualiy_batch(&pool, &parsed).await {
-                                eprintln!("[Consumer] failed to insert record: {}", e)
+                                error!(target: "consumer", "[Consumer] failed to insert record: {}", e)
                             }
                         }
-                        Err(e) => eprint!("[Consumer] failed to parse JSON: {}", e),
+                        Err(e) => {
+                            error!(target: "consumer", "[Consumer] failed to parse JSON: {}", e)
+                        }
                     }
                 }
             }
-            Err(e) => eprint!("[Consumer] Kafka Error: {}", e),
+            Err(e) => error!(target: "consumer", "[Consumer] Kafka Error: {}", e),
         }
     }
 }
@@ -61,7 +64,7 @@ pub async fn insert_air_qualiy_batch(
     if data.is_empty() {
         return Ok(());
     }
-
+    info!(target: "consumer", "Parsing time series data");
     let times: Vec<DateTime<Utc>> = data
         .iter()
         .map(|r| {
@@ -123,5 +126,6 @@ pub async fn insert_air_qualiy_batch(
         .bind(&us_aqis)
         .execute(pool)
         .await?;
+    info!(target: "consumer", "Data ingested");
     Ok(())
 }
