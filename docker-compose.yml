@@ -61,7 +61,7 @@ services:
 #   build:
 #     context: .
 #   image: rust_kafka:latest
-#   command: [ "--broker", "kafka:29092", "producer" ]
+#   command: [ "--broker", "kafka:29092", "producer" "--mode", "recent] # or historical, depends on what you want
 #   networks:
 #     - kafka-net
 

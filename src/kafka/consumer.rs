@@ -1,4 +1,4 @@
-use crate::model::AirQualityHourly;
+use crate::air_models::AirQualityHourly;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
@@ -8,9 +8,7 @@ use std::time::Duration;
 use tokio_stream::StreamExt;
 use tracing::{error, info};
 
-use crate::config::{load_config, AppConfig};
-
-pub async fn run_consumer(broker: &str) {
+pub async fn run_consumer(broker: &str, db_url: &str) {
     let consumer: StreamConsumer = ClientConfig::new()
         .set("bootstrap.servers", broker)
         .set("group.id", "hello-group")
@@ -22,8 +20,8 @@ pub async fn run_consumer(broker: &str) {
         .subscribe(&["weather-data"])
         .expect("Failed to subscribe to topic");
 
-    let config: AppConfig = load_config().expect("Failed to load config");
-    let db_url = config.database.db_url.as_str();
+    // let config: AppConfig = load_config().expect("Failed to load config");
+    // let db_url = config.database.db_url.as_str();
 
     let pool: PgPool = PgPoolOptions::new()
         .max_connections(10)
