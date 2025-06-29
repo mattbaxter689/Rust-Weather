@@ -32,7 +32,7 @@ services:
 
   kafka_postgres:
     image: timescale/timescaledb:latest-pg16
-    container_name: kafka_timescale
+    container_name: kafka_postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
