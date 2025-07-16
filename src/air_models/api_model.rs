@@ -1,3 +1,4 @@
+use crate::air_models::air_model::AirQuality;
 use crate::air_models::{AirQualityHourly, RawAirQuality};
 use crate::traits::data_fetcher::DataFetcher;
 use async_trait::async_trait;
@@ -22,12 +23,13 @@ impl DataFetcher for APIFetcher {
 
         let response = self.client.get(url).send().await?;
         let raw_data: RawAirQuality = response.json().await?;
-        let hourly_data: Vec<AirQualityHourly> = raw_data.into();
+        let hourly_data: AirQuality = raw_data.into();
 
         let now = Utc::now();
 
         // Filter out future timestamps by parsing time string
         let filtered: Vec<AirQualityHourly> = hourly_data
+            .hourly
             .into_iter()
             .filter_map(|record| {
                 if let Ok(naive_dt) = NaiveDateTime::parse_from_str(&record.time, "%Y-%m-%dT%H:%M")
@@ -65,6 +67,7 @@ impl DataFetcher for APIFetcher {
 
         let response = self.client.get(url).send().await?;
         let raw_data: RawAirQuality = response.json().await?;
-        Ok(raw_data.into())
+        let raw_transformed: AirQuality = raw_data.into();
+        Ok(raw_transformed.hourly)
     }
 }
