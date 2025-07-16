@@ -1,0 +1,82 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.9.1
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    networks:
+      - kafka-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.9.1
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-net
+
+  kafka_postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: kafka_postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./docker/init_db_schema.sql:/docker-entrypoint-initdb.d/init_db_schema.sql
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - kafka-net
+
+  topic-init:
+    image: confluentinc/cp-kafka:7.9.1
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/bash", "-c", "/create_topic.sh"]
+    volumes:
+      - ./create_topic.sh:/create_topic.sh
+    networks:
+      - kafka-net
+
+# Commenting this out to prevent building rust containers when testing locally
+# rust-producer:
+#   container_name: rust-producer
+#   build:
+#     context: .
+#   image: rust_kafka:latest
+#   command: [ "--broker", "kafka:29092", "producer" "--mode", "recent] # or historical, depends on what you want
+#   networks:
+#     - kafka-net
+
+# rust-consumer:
+#   container_name: rust-consumer
+#   image: rust_kafka:latest
+#   command: [ "--broker", "kafka:29092", "consumer" ]
+#   networks:
+#     - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
+
+volumes:
+  rust_kafka:
+    driver: local
+  pgdata:
