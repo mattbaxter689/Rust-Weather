@@ -62,16 +62,16 @@ async fn main() {
     match cli.command {
         Commands::Producer { mode } => match mode {
             ProducerMode::Historical => {
-                info!(target: "producer", "Starting historical grab");
+                info!(target: "producer", "Starting Historical Producer. Listening...");
                 run_historical_producer(&cli.broker, &fetcher).await;
             }
             ProducerMode::Recent => {
-                info!(target: "producer", "Starting historical grab");
+                info!(target: "producer", "Starting Recent Producer. Listening...");
                 run_recent_producer(&cli.broker, &fetcher).await;
             }
         },
         Commands::Consumer => {
-            info!(target: "consumer", "Starting historical grab");
+            info!(target: "consumer", "Starting Consumer. Listening...");
             run_consumer(&cli.broker, config.database.db_url.as_str()).await;
         }
     }
