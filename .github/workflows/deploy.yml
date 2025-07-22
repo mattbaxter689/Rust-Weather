@@ -28,7 +28,7 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:latest
 
-deploy_producer:
+  deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
