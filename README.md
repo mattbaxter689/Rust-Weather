@@ -85,6 +85,20 @@ Rust traits are incredibly powerful, and I may look to incorporate more as time
 goes on, however it will depend on what changes are made as this project should
 maintain clarity as well.
 
+### Deplying in Cloud
+If the infrastructure is already set up for us, great! But, when running this, we need to ensure that we include a `config.toml` that contains the lat/long information, alond with the database url. For example
+
+```toml
+[location]
+latitude = 50.0000
+longitude = -50.0000
+
+[database]
+db_url = "postgres://your_user:your_pass@your_address:5432/your_db"
+```
+
+We need this config information for the application to be able to access the air quality data for your area. Now, this was not developed at first with cloud solutions in mind, so I will try and come up with a more long term solution for this. Regardless, this needs to be in the working directory of the Compute Engine instance
+
 ### Additional Notes
 Something else I want to include is that this is a first iteration of my
 project. I have completed it to the point of initial scoped design, but as time
